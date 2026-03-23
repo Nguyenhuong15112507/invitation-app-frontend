@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useCallback, use, useState, forwardRef } from 'react';
+import Link from 'next/link';
 import axiosClient from '@/api/axiosClient';
 import SectionRenderer from '@/components/builder/SectionRenderer';
+import SongLongRenderer from '@/components/templates/SongLongRenderer';
+import MinimalistRedRenderer from '@/components/templates/MinimalistRedRenderer';
+import CineloveRenderer from '@/components/templates/CineloveRenderer';
 import SectionEditorPanel from '@/components/builder/SectionEditorPanel';
-import { Section, SectionType, SECTION_META, createDefaultSection, getDefaultSections, InvitationDoc } from '@/lib/sections';
+import GlobalStyleEditor from '@/components/builder/GlobalStyleEditor';
+import PreviewCanvas from '@/components/builder/PreviewCanvas';
+import { Section, SectionType, SECTION_META, createDefaultSection, getDefaultSections, InvitationDoc, GlobalConfig, DEFAULT_GLOBAL_CONFIG } from '@/lib/sections';
 
 import {
   DndContext,
@@ -191,15 +197,24 @@ const dropAnimationConfig: DropAnimation = {
 // ─── Main Editor Component ───────────────────────────────────
 export default function BuilderEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-
-  const [sections, setSections]         = useState<Section[]>(getDefaultSections());
-  const [expanded, setExpanded]         = useState<string | null>('hero-default');
+  const [isMounted, setIsMounted]       = useState(false);
+  const [sections, setSections]         = useState<Section[]>([]);
+  const [expanded, setExpanded]         = useState<string | null>(null);
   const [invStatus, setInvStatus]       = useState('TRIAL');
   const [invSlug, setInvSlug]           = useState('');
+  const [templateSlug, setTemplateSlug] = useState('modern-white');
   const [saveState, setSaveState]       = useState<SaveState>('idle');
   const [publishState, setPublishState] = useState<PublishState>('idle');
   const [addMenuOpen, setAddMenuOpen]   = useState(false);
   const [activeId, setActiveId]         = useState<string | null>(null);
+  
+  const [globalConfig, setGlobalConfig] = useState<GlobalConfig>(DEFAULT_GLOBAL_CONFIG);
+  const [activeTab, setActiveTab]       = useState<'content' | 'style'>('content');
+  const [previewMode, setPreviewMode]   = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -210,22 +225,40 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     axiosClient.get('/invitations/my').then((res) => {
       const inv = res.data.find((i: any) => String(i.id) === id);
-      if (!inv) return;
+      if (!inv) {
+        setSections(getDefaultSections());
+        setExpanded('hero-default');
+        return;
+      }
       setInvStatus(inv.status);
       setInvSlug(inv.slug ?? '');
+      setTemplateSlug(inv.template?.slug ?? 'modern-white');
       try {
         const doc: InvitationDoc = JSON.parse(inv.configJson);
-        if (doc?.sections?.length) setSections(doc.sections);
-      } catch {}
-    }).catch(() => {});
+        if (doc?.sections?.length) {
+          setSections(doc.sections);
+          setExpanded(doc.sections[0].id);
+        } else {
+          setSections(getDefaultSections());
+          setExpanded('hero-default');
+        }
+        if (doc?.globalConfig) setGlobalConfig(doc.globalConfig);
+      } catch {
+        setSections(getDefaultSections());
+        setExpanded('hero-default');
+      }
+    }).catch(() => {
+      setSections(getDefaultSections());
+      setExpanded('hero-default');
+    });
   }, [id]);
 
   // ── Autosave ──────────────────────────────────────────────────
   const debouncedSave = useCallback(
-    debounce(async (secs: Section[], invId: string) => {
+    debounce(async (secs: Section[], gConf: GlobalConfig, invId: string) => {
       setSaveState('saving');
       try {
-        const configJson: InvitationDoc = { sections: secs };
+        const configJson: InvitationDoc = { sections: secs, globalConfig: gConf };
         await axiosClient.put(`/invitations/${invId}`, { configJson });
         setSaveState('saved');
         setTimeout(() => setSaveState('idle'), 2500);
@@ -238,9 +271,9 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => { 
     if (sections.length > 0) {
-      debouncedSave(sections, id); 
+      debouncedSave(sections, globalConfig, id); 
     }
-  }, [sections, debouncedSave, id]);
+  }, [sections, globalConfig, debouncedSave, id]);
 
   // ── Drag & Drop handlers ──────────────────────────────────────
   const handleDragStart = (event: DragStartEvent) => {
@@ -293,12 +326,21 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
     t => !existingTypes.has(t) || ['event', 'bank', 'gallery', 'story', 'message'].includes(t)
   );
 
+  const previewSections = isMounted ? sections : [];
   const activeSection = sections.find(s => s.id === activeId);
+
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-rose-400 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans select-none">
       {/* ── Left: Sidebar Builder ── */}
-      <div className="w-[440px] flex-shrink-0 bg-white border-r flex flex-col z-20 shadow-xl relative">
+      <div className={`w-[440px] flex-shrink-0 bg-white border-r flex flex-col z-20 shadow-xl relative ${previewMode ? 'hidden' : ''}`}>
 
         {/* Static Header */}
         <div className="px-6 py-5 border-b bg-white z-30">
@@ -327,14 +369,24 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
               </button>
             </div>
           </div>
+          <div className="flex bg-gray-100 p-1 mt-4 rounded-lg">
+            <button onClick={() => setActiveTab('content')} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${activeTab === 'content' ? 'bg-white shadow text-rose-600' : 'text-gray-500'}`}>NỘI DUNG</button>
+            <button onClick={() => setActiveTab('style')} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${activeTab === 'style' ? 'bg-white shadow text-rose-600' : 'text-gray-500'}`}>TUỲ CHỈNH</button>
+          </div>
         </div>
 
         {/* Toolbar */}
         <div className="px-6 py-3 bg-gray-50/80 border-b flex items-center justify-between text-[11px] font-bold text-gray-500 z-30">
           <div className="flex gap-4">
-            <a href={`/${invSlug}`} target="_blank" className="text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition-colors">
-              <span className="text-sm">🔗</span> TRANG PUBLIC
-            </a>
+            {invSlug ? (
+              <Link href={`/${invSlug}`} target="_blank" className="text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition-colors">
+                <span className="text-sm">🔗</span> TRANG PUBLIC
+              </Link>
+            ) : (
+              <span className="text-gray-300 flex items-center gap-1.5 grayscale cursor-not-allowed">
+                <span className="text-sm">🔗</span> TRANG PUBLIC (Loading...)
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <span className="text-sm">⇅</span> KÉO THẢ ĐỂ ĐỔI THỨ TỰ
@@ -342,6 +394,7 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Draggable List */}
+        {activeTab === 'content' && (
         <div className="flex-1 overflow-y-auto px-6 py-6 pb-32 no-scrollbar bg-gray-50/30 relative">
           <DndContext
             sensors={sensors}
@@ -413,33 +466,37 @@ export default function BuilderEditorPage({ params }: { params: Promise<{ id: st
             </DragOverlay>
           </DndContext>
         </div>
+        )}
+
+        {/* Style & Music Builder */}
+        {activeTab === 'style' && (
+          <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/30">
+             <GlobalStyleEditor config={globalConfig} onChange={setGlobalConfig} />
+          </div>
+        )}
       </div>
 
       {/* ── Right: Device Preview ── */}
       <div className="flex-1 bg-[#F1F0EF] flex flex-col items-center justify-start pt-10 pb-20 overflow-y-auto no-scrollbar relative">
         <div className="sticky top-0 z-30 w-full flex justify-center pb-8 pt-4 -mt-10 bg-gradient-to-b from-[#F1F0EF] via-[#F1F0EF]/80 to-transparent pointer-events-none">
-          <div className="px-6 py-2 bg-white/90 backdrop-blur-md rounded-full border border-gray-100 shadow-xl flex items-center gap-3 pointer-events-auto">
-            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest">Live Editor Preview</span>
+          <div className="px-6 py-2 bg-white/90 backdrop-blur-md rounded-full border border-gray-100 shadow-xl flex items-center gap-3 pointer-events-auto cursor-pointer" onClick={() => setPreviewMode(!previewMode)}>
+            <span className={`flex h-2 w-2 rounded-full ${previewMode ? 'bg-purple-500' : 'bg-green-500'} animate-pulse`}></span>
+            <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest">{previewMode ? 'Thoát Preview Mode (Esc)' : 'Xem Demo (Preview)'}</span>
           </div>
         </div>
 
-        {/* device frame mock */}
-        <div className="w-[400px] min-h-[850px] bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] ring-[16px] ring-gray-900 rounded-[50px] overflow-hidden relative border-[2px] border-gray-800 flex-shrink-0">
-          {/* Dynamic Speaker/Sensor Notch */}
-          <div className="absolute top-0 inset-x-0 h-8 bg-gray-900 z-[100] flex justify-center">
-             <div className="w-32 h-6 bg-gray-900 rounded-b-2xl border-b border-gray-800/50"></div>
-          </div>
-          
-          <div className="h-full pt-8 overflow-y-auto no-scrollbar bg-[#FDFBF7] scroll-smooth">
-            <SectionRenderer sections={sections} />
-          </div>
-
-          {/* Device Home Indicator */}
-          <div className="absolute bottom-2 inset-x-0 h-1.5 flex justify-center pointer-events-none z-[100]">
-             <div className="w-32 h-1 bg-gray-900/10 rounded-full"></div>
-          </div>
-        </div>
+        {/* --- Unified Preview Canvas --- */}
+        <PreviewCanvas height="min-h-[880px]">
+          {templateSlug === 'song-long-do' ? (
+            <SongLongRenderer sections={previewSections} globalConfig={globalConfig} />
+          ) : templateSlug === 'minimalist-red' ? (
+            <MinimalistRedRenderer sections={previewSections} globalConfig={globalConfig} />
+          ) : templateSlug === 'cinelove-premium' ? (
+            <CineloveRenderer sections={previewSections} globalConfig={globalConfig} />
+          ) : (
+            <SectionRenderer sections={previewSections} globalConfig={globalConfig} />
+          )}
+        </PreviewCanvas>
 
         {/* helper text */}
         <p className="mt-8 text-xs font-bold text-gray-400 opacity-50 uppercase tracking-[0.3em]">

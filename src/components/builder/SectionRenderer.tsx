@@ -1,7 +1,9 @@
 'use client';
 
-import { Section, SectionData } from '@/lib/sections';
+import { Section, SectionData, GlobalConfig, DEFAULT_GLOBAL_CONFIG } from '@/lib/sections';
+import BackgroundMusic from './BackgroundMusic';
 import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 
 const HeroSection        = dynamic(() => import('@/components/sections/HeroSection'));
 const CoupleSection      = dynamic(() => import('@/components/sections/CoupleSection'));
@@ -31,7 +33,10 @@ function renderSection(section: Section) {
   }
 }
 
-export default function SectionRenderer({ sections }: { sections: Section[] }) {
+export default function SectionRenderer({ sections, globalConfig = DEFAULT_GLOBAL_CONFIG }: { sections: Section[], globalConfig?: GlobalConfig }) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
   const visible = sections.filter((s) => s.visible);
   if (!visible.length) {
     return (
@@ -42,7 +47,11 @@ export default function SectionRenderer({ sections }: { sections: Section[] }) {
   }
 
   return (
-    <div className="bg-[#FDFBF7] min-h-full">
+    <div 
+      className={`min-h-full relative ${globalConfig.fontFamily || DEFAULT_GLOBAL_CONFIG.fontFamily}`}
+      style={{ backgroundColor: globalConfig.bgColor || DEFAULT_GLOBAL_CONFIG.bgColor, color: globalConfig.textColor || DEFAULT_GLOBAL_CONFIG.textColor }}
+    >
+      {isMounted && globalConfig.musicUrl && <BackgroundMusic url={globalConfig.musicUrl} />}
       {visible.map(renderSection)}
     </div>
   );

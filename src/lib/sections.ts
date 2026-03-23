@@ -104,9 +104,27 @@ export interface Section {
   data: SectionData;
 }
 
+export interface GlobalConfig {
+  musicUrl?: string;
+  fontFamily?: string;
+  primaryColor?: string;
+  textColor?: string;
+  bgColor?: string;
+  buttonStyle?: 'rounded' | 'square' | 'pill';
+}
+
 export interface InvitationDoc {
   sections: Section[];
+  globalConfig?: GlobalConfig;
 }
+
+export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
+  fontFamily: 'font-serif',
+  primaryColor: '#D4AF37',
+  textColor: '#8B0000',
+  bgColor: '#FFF8EE',
+  buttonStyle: 'rounded',
+};
 
 // ── Metadata for UI ──────────────────────────────────────────
 export const SECTION_META: Record<SectionType, { label: string; icon: string; description: string }> = {

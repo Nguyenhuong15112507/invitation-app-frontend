@@ -139,14 +139,13 @@ export default function MyInvitationsPage() {
                     >
                       ✏️ Chỉnh sửa
                     </Link>
-                    <a
-                      href={`http://localhost:3000/${inv.slug}`}
+                    <Link
+                      href={`/${inv.slug}`}
                       target="_blank"
-                      rel="noreferrer"
                       className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition"
                     >
                       🔗 Xem thiệp
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

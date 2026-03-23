@@ -1,6 +1,7 @@
 'use client';
 
 import { Section, SectionType, EventItem, StoryItem, BankAccount } from '@/lib/sections';
+import FileUploader from './FileUploader';
 
 interface Props {
   section: Section;
@@ -16,8 +17,7 @@ function HeroEditor({ data, onChange }: { data: any; onChange: any }) {
   return (
     <div className="space-y-3">
       <div>
-        <label className={labelCls}>Ảnh bìa (URL)</label>
-        <input value={data.coverImage || ''} onChange={e => onChange({ ...data, coverImage: e.target.value })} placeholder="https://..." className={inputCls} />
+        <FileUploader label="Ảnh bìa" value={data.coverImage || ''} onChange={val => onChange({ ...data, coverImage: val })} accept="image/*" />
       </div>
       <div>
         <label className={labelCls}>Tiêu đề phụ</label>
@@ -40,14 +40,12 @@ function CoupleEditor({ data, onChange }: { data: any; onChange: any }) {
           <input value={data.brideName || ''} onChange={e => onChange({ ...data, brideName: e.target.value })} className={inputCls} placeholder="Tên cô dâu" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 mt-4">
         <div>
-          <label className={labelCls}>Ảnh chú rể (URL)</label>
-          <input value={data.groomPhoto || ''} onChange={e => onChange({ ...data, groomPhoto: e.target.value })} className={inputCls} placeholder="https://..." />
+          <FileUploader label="Ảnh chú rể" value={data.groomPhoto || ''} onChange={val => onChange({ ...data, groomPhoto: val })} accept="image/*" />
         </div>
         <div>
-          <label className={labelCls}>Ảnh cô dâu (URL)</label>
-          <input value={data.bridePhoto || ''} onChange={e => onChange({ ...data, bridePhoto: e.target.value })} className={inputCls} placeholder="https://..." />
+          <FileUploader label="Ảnh cô dâu" value={data.bridePhoto || ''} onChange={val => onChange({ ...data, bridePhoto: val })} accept="image/*" />
         </div>
       </div>
     </div>
@@ -139,13 +137,14 @@ function GalleryEditor({ data, onChange }: { data: any; onChange: any }) {
   return (
     <div className="space-y-3">
       <div>
-        <label className={labelCls}>URL ảnh (mỗi dòng 1 URL)</label>
+        <label className={labelCls}>Upload ảnh Gallery (chọn 1 file, sẽ tốn thời gian upload) hoặc nhập dòng các URL</label>
+        <FileUploader label="Tải ảnh mới" value="" onChange={(url) => { if(url) setImages([...images, url].join('\n')) }} accept="image/*" />
         <textarea
-          defaultValue={images.join('\n')}
-          onBlur={e => setImages(e.target.value)}
+          value={images.join('\n')}
+          onChange={e => setImages(e.target.value)}
           rows={4}
           placeholder={"https://example.com/1.jpg\nhttps://example.com/2.jpg"}
-          className={`${inputCls} resize-none font-mono text-xs`}
+          className={`${inputCls} resize-none font-mono text-xs mt-2`}
         />
         {images.length > 0 && <p className="text-xs text-green-600 mt-1">✓ {images.length} ảnh hợp lệ</p>}
       </div>

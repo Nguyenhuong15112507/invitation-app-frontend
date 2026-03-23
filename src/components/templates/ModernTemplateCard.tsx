@@ -33,7 +33,7 @@ export default function ModernTemplateCard({ config }: { config: Partial<Invitat
 
       {/* Date & Location */}
       <div className="mt-8 border-t border-b border-rose-100 py-5 w-4/5 text-center space-y-1">
-        <p className="text-lg font-medium text-gray-700">{config?.date ? new Date(config.date).toLocaleDateString('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Ngày cưới'}</p>
+        <p className="text-lg font-medium text-gray-700" suppressHydrationWarning>{config?.date ? new Date(config.date).toLocaleDateString('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Ngày cưới'}</p>
         {config?.time && <p className="text-gray-400 text-sm">{config.time}</p>}
         {config?.location && <p className="text-gray-600 text-sm mt-2">📍 {config.location}</p>}
       </div>

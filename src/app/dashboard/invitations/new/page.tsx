@@ -1,9 +1,10 @@
 'use client';
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axiosClient from '@/api/axiosClient';
 
-export default function NewInvitation() {
+function NewInvitationForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get('templateId') || '1';
@@ -57,5 +58,13 @@ export default function NewInvitation() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function NewInvitation() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Đang tải...</div>}>
+      <NewInvitationForm />
+    </Suspense>
   );
 }

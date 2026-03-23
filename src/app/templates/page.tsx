@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
 export default async function Templates() {
-  // Fetch từ backend localhost:4000
+  // Fetch từ backend 127.0.0.1:4000
   let templates = [];
   try {
-    const res = await fetch('http://localhost:4000/templates', { cache: 'no-store' });
+    const res = await fetch('http://127.0.0.1:4000/templates', { cache: 'no-store' });
     templates = await res.json();
   } catch (e) {
     console.error("Backend not running or error");

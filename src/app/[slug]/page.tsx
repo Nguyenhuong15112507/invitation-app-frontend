@@ -1,11 +1,15 @@
 import { notFound } from 'next/navigation';
 import RsvpModal from '@/components/RsvpModal';
 import SectionRenderer from '@/components/builder/SectionRenderer';
+import SongLongRenderer from '@/components/templates/SongLongRenderer';
+import MinimalistRedRenderer from '@/components/templates/MinimalistRedRenderer';
+import CineloveRenderer from '@/components/templates/CineloveRenderer';
+import PreviewCanvas from '@/components/builder/PreviewCanvas';
 import { Section } from '@/lib/sections';
 
 async function getInvitation(slug: string) {
   try {
-    const res = await fetch(`http://localhost:4000/invitations/public/${slug}`, {
+    const res = await fetch(`http://127.0.0.1:4000/invitations/public/${slug}`, {
       next: { revalidate: 0 },
     });
     if (!res.ok) {
@@ -38,26 +42,38 @@ export default async function PublicInvitation({ params }: { params: Promise<{ s
     );
   }
 
-  // Parse sections from configJson
+  // Parse sections and globalConfig from configJson
   let sections: Section[] = [];
+  let globalConfig = undefined;
   try {
     const cfg = data.config ?? {};
     if (cfg.sections && Array.isArray(cfg.sections)) {
       sections = cfg.sections;
     }
+    if (cfg.globalConfig) {
+      globalConfig = cfg.globalConfig;
+    }
   } catch {}
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-6">
-      <div className="w-full max-w-md bg-white shadow-2xl rounded-3xl overflow-hidden relative">
+    <div className="min-h-screen bg-[#F1F0EF] flex flex-col items-center py-6">
+      <PreviewCanvas height="min-h-screen">
         {sections.length > 0 ? (
-          <SectionRenderer sections={sections} />
+          data.template === 'song-long-do' ? (
+            <SongLongRenderer sections={sections} globalConfig={globalConfig} />
+          ) : data.template === 'minimalist-red' ? (
+            <MinimalistRedRenderer sections={sections} globalConfig={globalConfig} />
+          ) : data.template === 'cinelove-premium' ? (
+            <CineloveRenderer sections={sections} globalConfig={globalConfig} />
+          ) : (
+            <SectionRenderer sections={sections} globalConfig={globalConfig} />
+          )
         ) : (
           <div className="p-10 text-center text-gray-400 text-sm">
             Thiệp đang được chuẩn bị...
           </div>
         )}
-      </div>
+      </PreviewCanvas>
 
       {/* Floating RSVP button */}
       <div className="fixed bottom-6 left-0 w-full flex justify-center z-50">
