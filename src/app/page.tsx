@@ -1,65 +1,58 @@
-import Image from "next/image";
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="bg-white min-h-screen">
+      {/* Navbar UI */}
+      <nav className="border-b px-8 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <h1 className="text-2xl font-bold text-rose-600">Create Invitations</h1>
+        <div className="space-x-8 font-medium">
+          <Link href="/templates" className="hover:text-rose-600 transition">Mẫu Thiệp</Link>
+          <Link href="/pricing" className="hover:text-rose-600 transition text-gray-400">Bảng Giá</Link>
+          <Link href="/login" className="px-6 py-2 rounded-full border border-rose-600 text-rose-600 hover:bg-rose-50">Đăng Nhập</Link>
+          <Link href="/register" className="px-6 py-2 rounded-full bg-rose-600 text-white hover:bg-rose-700 shadow-md transition">Bắt Đầu Ngay</Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto px-8 py-20 text-center">
+        <span className="bg-rose-100 text-rose-600 px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest leading-loose">Digital Wedding Invitations</span>
+        <h2 className="mt-6 text-6xl font-extrabold text-gray-900 leading-tight">
+          Tạo thiệp cưới online <br /> <span className="text-rose-600">Đẹp - Nhanh - Hiện Đại</span>
+        </h2>
+        <p className="mt-8 text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          Tiết kiệm thời gian, quản lý RSVP thông minh, mừng tiền online bằng QR Code và chia sẻ dễ dàng qua Zalo, Messenger chỉ với 1 cú click.
+        </p>
+        <div className="mt-12 flex justify-center gap-4">
+          <Link href="/templates" className="px-10 py-4 bg-rose-600 text-white text-lg font-bold rounded-xl shadow-xl hover:scale-105 transition transform">
+            Khám phá 50+ Mẫu thiệp
+          </Link>
+          <Link href="/demo-slug" className="px-10 py-4 border-2 border-gray-200 text-gray-700 text-lg font-bold rounded-xl hover:bg-gray-50 transition">
+            Xem Thiệp Mẫu
+          </Link>
         </div>
       </main>
+
+      {/* Feature Section */}
+      <section className="bg-gray-50 py-20 px-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="text-center p-6 bg-white rounded-3xl shadow-sm border border-gray-100">
+            <div className="bg-rose-50 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-4xl">✨</div>
+            <h3 className="text-xl font-bold mb-3">Tự tay thiết kế</h3>
+            <p className="text-gray-500">Chỉ cần điền thông tin, ảnh và video. Hệ thống tự render giao diện mượt mà.</p>
+          </div>
+          <div className="text-center p-6 bg-white rounded-3xl shadow-sm border border-gray-100">
+            <div className="bg-rose-50 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-4xl">📱</div>
+            <h3 className="text-xl font-bold mb-3">Mobile First</h3>
+            <p className="text-gray-500">Thiết kế tối ưu cho mọi thiết bị di động. Khách mời mở thiệp là bị hút hồn.</p>
+          </div>
+          <div className="text-center p-6 bg-white rounded-3xl shadow-sm border border-gray-100">
+            <div className="bg-rose-50 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-4xl">💳</div>
+            <h3 className="text-xl font-bold mb-3">Mừng cưới QR</h3>
+            <p className="text-gray-500">Tích hợp VietQR, khách mời chỉ cần quét mã để gửi lời chúc và quà mừng.</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
