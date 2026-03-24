@@ -16,6 +16,8 @@ const BankSection        = dynamic(() => import('@/components/sections/BankSecti
 const MapSection         = dynamic(() => import('@/components/sections/MapSection'));
 const FooterSection      = dynamic(() => import('@/components/sections/FooterSection'));
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 function renderSection(section: Section) {
   const d = section.data as any;
   switch (section.type) {
@@ -48,11 +50,26 @@ export default function SectionRenderer({ sections, globalConfig = DEFAULT_GLOBA
 
   return (
     <div 
-      className={`min-h-full relative ${globalConfig.fontFamily || DEFAULT_GLOBAL_CONFIG.fontFamily}`}
+      className={`min-h-full relative ${globalConfig.fontFamily || DEFAULT_GLOBAL_CONFIG.fontFamily} flex flex-col`}
       style={{ backgroundColor: globalConfig.bgColor || DEFAULT_GLOBAL_CONFIG.bgColor, color: globalConfig.textColor || DEFAULT_GLOBAL_CONFIG.textColor }}
     >
       {isMounted && globalConfig.musicUrl && <BackgroundMusic url={globalConfig.musicUrl} />}
-      {visible.map(renderSection)}
+      <AnimatePresence mode="popLayout">
+        {visible.map((section) => (
+          <motion.div
+            key={section.id}
+            layout="position"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full"
+          >
+            {renderSection(section)}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

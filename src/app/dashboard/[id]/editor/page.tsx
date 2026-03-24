@@ -11,7 +11,7 @@ import SectionEditorPanel from '@/components/builder/SectionEditorPanel';
 import GlobalStyleEditor from '@/components/builder/GlobalStyleEditor';
 import PreviewCanvas from '@/components/builder/PreviewCanvas';
 import { Section, SectionType, SECTION_META, createDefaultSection, getDefaultSections, InvitationDoc, GlobalConfig, DEFAULT_GLOBAL_CONFIG } from '@/lib/sections';
-
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext,
   closestCenter,
@@ -124,18 +124,29 @@ const SectionCardUI = forwardRef<HTMLDivElement, SectionCardUIProps>(({
         </button>
 
         {/* Expand chevron */}
-        <span className={`text-gray-400 text-xs transition-transform duration-200 ml-1 ${isExpanded ? 'rotate-180 text-rose-400' : ''}`}>▾</span>
+        <span className={`text-gray-400 text-xs transition-transform duration-300 ml-1 ${isExpanded ? 'rotate-180 text-rose-400' : ''}`}>▾</span>
       </div>
 
       {/* Section editor – expanded */}
-      {isExpanded && !isOverlay && onChangeData && (
-        <div className="border-t border-rose-100 px-4 py-4 bg-white animate-in slide-in-from-top-1 duration-200">
-          <SectionEditorPanel
-            section={section}
-            onChange={onChangeData}
-          />
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {isExpanded && !isOverlay && onChangeData && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-rose-100 px-4 py-4 bg-white">
+              <SectionEditorPanel
+                section={section}
+                onChange={onChangeData}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });
