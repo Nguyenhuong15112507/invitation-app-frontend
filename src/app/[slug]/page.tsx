@@ -5,6 +5,7 @@ import SongLongRenderer from '@/components/templates/SongLongRenderer';
 import MinimalistRedRenderer from '@/components/templates/MinimalistRedRenderer';
 import CineloveRenderer from '@/components/templates/CineloveRenderer';
 import PreviewCanvas from '@/components/builder/PreviewCanvas';
+import FreeformViewer from '@/components/freeform-builder/FreeformViewer';
 import { Section } from '@/lib/sections';
 
 async function getInvitation(slug: string) {
@@ -55,10 +56,14 @@ export default async function PublicInvitation({ params }: { params: Promise<{ s
     }
   } catch {}
 
+  const editorType = data.editorType || 'BLOCK';
+
   return (
     <div className="min-h-screen bg-[#F1F0EF] flex flex-col items-center py-6">
       <PreviewCanvas height="min-h-screen">
-        {sections.length > 0 ? (
+        {editorType === 'FREEFORM' ? (
+          <FreeformViewer config={data.config} />
+        ) : sections.length > 0 ? (
           data.template === 'song-long-do' ? (
             <SongLongRenderer sections={sections} globalConfig={globalConfig} />
           ) : data.template === 'minimalist-red' ? (

@@ -12,6 +12,7 @@ type Invitation = {
   template: { name: string; thumbnail: string };
   _count: { rsvps: number };
   configJson: string;
+  editorType: 'BLOCK' | 'FREEFORM';
 };
 
 const statusLabel: Record<string, { label: string; color: string }> = {
@@ -134,7 +135,7 @@ export default function MyInvitationsPage() {
                       📋 Xem RSVP
                     </Link>
                     <Link
-                      href={`/dashboard/${inv.id}/editor`}
+                      href={inv.editorType === 'FREEFORM' ? `/dashboard/${inv.id}/freeform-editor` : `/dashboard/${inv.id}/editor`}
                       className="px-4 py-1.5 bg-gray-50 text-gray-600 rounded-lg text-xs font-semibold hover:bg-gray-100 transition"
                     >
                       ✏️ Chỉnh sửa
