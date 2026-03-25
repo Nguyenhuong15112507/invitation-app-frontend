@@ -43,10 +43,17 @@ export default function FreeformEditorPage({ params }: { params: Promise<{ id: s
     setSaving(true);
     try {
       const configJson = JSON.stringify({ blocks, globalStyles });
-      await axiosClient.put(`/invitations/${id}`, { configJson });
+      console.log('Saving configJson (Length):', configJson.length);
+      console.log('Sending payload:', { configJson: configJson.substring(0, 100) + '...' });
+
+      const response = await axiosClient.put(`/invitations/${id}`, { configJson });
+      console.log('Save response:', response.data);
+
       alert('Đã lưu thành công!');
-    } catch (err) {
-      alert('Lỗi khi lưu dữ liệu.');
+    } catch (err: any) {
+      console.error('Save error:', err);
+      const msg = err.response?.data?.message || err.message || 'Lỗi không xác định';
+      alert(`Lỗi khi lưu dữ liệu: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -65,10 +72,10 @@ export default function FreeformEditorPage({ params }: { params: Promise<{ id: s
           <h1 className="font-bold text-gray-800">Editor Tự Do (Beta)</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-             onClick={handleSave}
-             disabled={saving}
-             className="px-6 py-2 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 disabled:opacity-50 shadow-lg shadow-rose-200"
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-6 py-2 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 disabled:opacity-50 shadow-lg shadow-rose-200"
           >
             {saving ? 'Đang lưu...' : 'Lưu lại'}
           </button>
